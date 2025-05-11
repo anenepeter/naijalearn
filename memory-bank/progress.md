@@ -1,7 +1,5 @@
 # Progress: NaijaLearn
 
-:start_line:3
--------
 ## Current Status
 The project has completed "Phase 0: Foundation & Setup" and is ready to begin implementing core user journeys. The foundational documentation, environment configuration, basic project structure, and initial CI/CD are in place.
 
