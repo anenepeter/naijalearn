@@ -1,21 +1,30 @@
 # Active Context: NaijaLearn
 
 ## Current Work Focus
-The current focus is on establishing the foundational technical infrastructure for the NaijaLearn platform. This aligns with "Phase 0: Foundation & Setup" of the development action plan.
+The current focus is on completing "Phase 1: Core User Journey - Authentication & Course Discovery (MVP)" of the development action plan. Significant progress has been made on authentication and course discovery features.
 
 ## Recent Changes
-As the project is just starting, there are no significant code changes yet. The primary recent activity has been reading and internalizing the project requirements document (`naijalearn-prd.md`) and the proposed development action plan (`action\ plan.md`). The core memory bank files (`projectbrief.md`, `productContext.md`, `systemPatterns.md`, `techContext.md`) have been created to capture this initial understanding.
+- Implemented basic user authentication (signup and login forms integrated with Redux).
+- Implemented protected routes using Next.js App Router layout.
+- Implemented a basic User Profile page.
+- Defined core Sanity schemas for course content (`category`, `instructor`, `module`, `lesson`, `quiz`, `question`).
+- Set up the Sanity client and GROQ queries (`lib/sanityClient.ts`, `lib/sanityQueries.ts`).
+- Created the homepage (`app/page.tsx`) and course listing page (`app/courses/page.tsx`) to display courses fetched from Sanity.
+- Created a placeholder `CourseCard` component (`components/features/courses/CourseCard.tsx`).
+- Set up the Supabase schema for enrollments.
+- Created the detailed course pages (`app/courses/[slug]/page.tsx`) to display individual course information and handle enrollment.
+- Implemented fetching and displaying user's enrolled courses on the dashboard (`app/(platform)/dashboard/page.tsx`).
+- Implemented the password recovery flow (`app/(auth)/forgot-password/page.tsx`, `app/(auth)/update-password/page.tsx`).
 
 ## Next Steps
-The immediate next steps are to execute the tasks outlined in "Phase 0: Foundation & Setup" of the action plan. This includes:
-1. Project Initialization (Next.js, Git, Tailwind CSS, Redux Toolkit setup).
-2. Service Setup (Supabase and Sanity.io project creation and initial configuration).
-3. Core Project Structure setup.
-4. Basic Layout & UI Shell implementation.
-5. Initial Deployment & CI/CD setup.
+The immediate next steps are to complete the remaining tasks in "Phase 1: Core User Journey - Authentication & Course Discovery (MVP)". This includes:
+- Implement social logins (optional enhancement).
+- Implement avatar upload functionality on the User Profile page (enhancement).
+
+After completing Phase 1, the project will move on to "Phase 2: Core E-Learning Mechanics - Consumption & Quizzes".
 
 ## Active Decisions and Considerations
-- Confirming the use of Tailwind CSS v4 stable features and documenting any necessary workarounds for experimental features.
-- Ensuring Supabase RLS is enabled and correctly configured from the outset.
-- Setting up environment variables securely in `.env.local` and Vercel.
-- Establishing a basic CI pipeline for linting and type-checking.
+- Ensuring robust error handling and user feedback for all authentication and enrollment processes.
+- Continuing to use TypeScript for type safety.
+- Addressing any lingering file corruption issues if they reappear.
+- Preparing for the implementation of interactive components in later phases.
