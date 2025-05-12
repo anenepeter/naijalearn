@@ -27,16 +27,16 @@ The remaining tasks include:
 - Completing the remaining tasks in "Phase 1: Core User Journey - Authentication & Course Discovery (MVP)":
     - Implement social logins (optional enhancement).
     - Implement avatar upload functionality on the User Profile page (enhancement).
+    - Updated the navigation bar to include links for the Dashboard and Profile pages.
+    - Fixed TypeScript error in `lib/courseProgress.ts` by adding the missing `courseLessonsQuery` to `lib/sanityQueries.ts`.
+    - Updated protected route redirect to `/login`.
+    - Added signup and forgotten password links to the login page (`app/(auth)/login/page.tsx`).
 - Implementing "Phase 2: Core E-Learning Mechanics - Consumption & Quizzes":
-    - Create the Lesson View Page (`app/courses/[courseSlug]/lessons/[lessonSlug]/page.tsx`).
     - Implement rendering of lesson content (Portable Text, embedded video, downloadable resources).
     - Implement lesson navigation ("Previous," "Next").
-    - Implement the Course Structure Sidebar.
-    - Set up Supabase schema for `quiz_attempts`.
-    - Implement functionality to mark lessons/modules as completed.
-    - Implement functionality to store quiz scores and attempts in Supabase.
-    - Implement visual progress indicators (e.g., progress bars) on the dashboard.
-    - Implement "Resume Learning" links on the dashboard.
+    - Implement Progress Tracking functionality (including marking lessons complete, calculating course progress, and displaying progress on the dashboard).
+    - Implement Quiz System functionality (including Supabase schema setup for `quiz_attempts`, `QuizPlayer` component, fetching quiz data, storing attempts, and integration with Lesson View Page).
+    - Enhance User Dashboard (specifically "Resume Learning" links).
     - Implement quiz consumption logic (displaying questions, handling answers, feedback, score calculation).
 - Implementing "Phase 3: NaijaLearn Specific Interactive Features".
 - Implementing "Phase 4: Content Management (Admin) & Advanced Features".

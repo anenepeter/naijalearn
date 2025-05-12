@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,21 +7,33 @@ import { client } from '@/lib/sanityClient';
 import { courseCardQuery } from '@/lib/sanityQueries'; // Use courseCardQuery for enrolled courses display
 import Link from 'next/link'; // For linking to course pages
 import Image from 'next/image'; // For course images
+import { calculateCourseProgress } from '@/lib/courseProgress'; // Import the progress calculation function
 
 // Define a basic type for enrolled course data
 interface EnrolledCourse {
   id: string;
   course_sanity_id: string;
   enrolled_at: string;
-  progress_percentage: number;
+  progress_percentage: number; // This will now hold the calculated progress
   // Add Sanity course details here after fetching
   sanityCourse?: {
     _id: string;
     title: string;
     slug: { current: string };
     mainImage?: any; // Replace 'any' with a proper Sanity image type later
-    // Add other fields needed for display
+    modules?: Array<{ // Add modules and lessons to the type
+      _key: string;
+      title: string;
+      lessons: Array<{
+        _id: string;
+        _key: string;
+        title: string;
+        slug: { current: string };
+        _updatedAt: string;
+      }>;
+    }>;
   };
+  lastIncompleteLessonSlug?: string; // Add field for the last incomplete lesson slug
 }
 
 export default function DashboardPage() {
@@ -32,7 +43,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchEnrolledCourses = async () => {
+    (async () => {
       if (!user) {
         setLoading(false);
         return;
@@ -42,7 +53,7 @@ export default function DashboardPage() {
         // Fetch enrollment records from Supabase
         const { data: enrollments, error: supabaseError } = await supabase
           .from('enrollments')
-          .select('id, course_sanity_id, enrolled_at, progress_percentage')
+          .select('id, course_sanity_id, enrolled_at')
           .eq('user_id', user.id);
 
         if (supabaseError) {
@@ -56,27 +67,84 @@ export default function DashboardPage() {
           const sanityCourseIds = enrollments.map(enrollment => enrollment.course_sanity_id);
 
           // Fetch corresponding course details from Sanity
-          // Using a GROQ query to fetch multiple courses by ID
           const sanityCoursesQuery = `*[_id in [${sanityCourseIds.map(id => `"${id}"`).join(',')}]]{
-             _id,
-             title,
-             slug,
-             mainImage
-             // Add other fields you need for the dashboard display
-           }`;
+            _id,
+            title,
+            slug,
+            mainImage,
+            modules[] {
+              _key,
+              title,
+              lessons[]->{
+                _id,
+                _key,
+                title,
+                slug,
+                _updatedAt // Include _updatedAt to potentially order lessons if needed
+              }
+            }
+          }`;
 
           const sanityCourses = await client.fetch(sanityCoursesQuery);
 
-          // Merge enrollment data with Sanity course details
-          const mergedCourses = enrollments.map(enrollment => {
-            const sanityCourse = sanityCourses.find((course: any) => course._id === enrollment.course_sanity_id);
-            return {
-              ...enrollment,
-              sanityCourse,
-            };
-          });
+          // Fetch lesson progress for the user
+          const { data: lessonProgress, error: progressError } = await supabase
+            .from('lesson_progress')
+            .select('lesson_sanity_id, completed')
+            .eq('user_id', user.id);
 
-          setEnrolledCourses(mergedCourses);
+          if (progressError) {
+            setError(progressError.message);
+            setLoading(false);
+            return;
+          }
+
+          // Create a map for quick lookup of lesson progress
+          const completedLessons = new Set(
+            lessonProgress?.filter(lp => lp.completed).map(lp => lp.lesson_sanity_id)
+          );
+
+          // Merge enrollment data with Sanity course details, calculate progress, and find last incomplete lesson
+          const mergedCoursesWithProgress = await Promise.all(
+            enrollments.map(async (enrollment) => {
+              const sanityCourse = sanityCourses.find((course: any) => course._id === enrollment.course_sanity_id);
+              let progressPercentage = 0;
+              let lastIncompleteLessonSlug: string | undefined;
+
+              if (sanityCourse?.slug?.current) {
+                progressPercentage = await calculateCourseProgress(user.id, sanityCourse.slug.current);
+
+                // Find the first incomplete lesson
+                if (sanityCourse.modules) {
+                  for (const module of sanityCourse.modules) {
+                    if (module.lessons) {
+                      for (const lesson of module.lessons) {
+                        if (!completedLessons.has(lesson._id)) {
+                          lastIncompleteLessonSlug = lesson.slug.current;
+                          break; // Found the first incomplete lesson
+                        }
+                      }
+                    }
+                    if (lastIncompleteLessonSlug) break; // Found in a module, break outer loop
+                  }
+                }
+
+                // If all lessons are completed, link to the first lesson or a completion page
+                if (!lastIncompleteLessonSlug && sanityCourse.modules?.[0]?.lessons?.[0]?.slug?.current) {
+                   lastIncompleteLessonSlug = sanityCourse.modules[0].lessons[0].slug.current;
+                }
+              }
+
+              return {
+                ...enrollment,
+                sanityCourse,
+                progress_percentage: progressPercentage,
+                lastIncompleteLessonSlug, // Add the determined slug
+              };
+            })
+          );
+
+          setEnrolledCourses(mergedCoursesWithProgress);
 
         } else {
           setEnrolledCourses([]); // No enrollments found
@@ -87,9 +155,8 @@ export default function DashboardPage() {
       } finally {
         setLoading(false);
       }
-    };
+    })(); // Call the IIFE immediately
 
-    fetchEnrolledCourses();
   }, [user]); // Refetch if user changes
 
   if (loading) {
@@ -129,25 +196,34 @@ export default function DashboardPage() {
                  </div>
                )}
               <div className="p-4">
-                <h3 className="text-xl font-semibold mb-2">{enrolledCourse.sanityCourse?.title || 'Loading...'}</h3>
-                <p className="text-sm text-gray-600">Progress: {enrolledCourse.progress_percentage}%</p>
-                {enrolledCourse.sanityCourse?.slug && (
-                   <Link href={`/courses/${enrolledCourse.sanityCourse.slug.current}`} className="mt-4 inline-block text-blue-600 hover:underline">
-                     Resume Learning
-                   </Link>
-                 )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+               <h3 className="text-xl font-semibold mb-2">{enrolledCourse.sanityCourse?.title || 'Loading...'}</h3>
+                 <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-2">
+                   <div
+                     className="bg-blue-600 h-2.5 rounded-full"
+                     style={{ width: `${enrolledCourse.progress_percentage}%` }}
+                   ></div>
+                 </div>
+                 <p className="text-sm text-gray-600">Progress: {enrolledCourse.progress_percentage}%</p>
+                 {enrolledCourse.sanityCourse?.slug?.current && enrolledCourse.lastIncompleteLessonSlug && (
+                    <Link
+                      href={`/courses/${enrolledCourse.sanityCourse.slug.current}/lessons/${enrolledCourse.lastIncompleteLessonSlug}`}
+                      className="mt-4 inline-block text-blue-600 hover:underline"
+                    >
+                      {enrolledCourse.progress_percentage === 100 ? 'Review Course' : 'Resume Learning'}
+                    </Link>
+                  )}
+               </div>
+             </div>
+           ))}
+         </div>
+       )}
 
-      {/* Add links to profile settings, etc. */}
-      <div className="mt-8">
-         <Link href="/dashboard/profile" className="text-blue-600 hover:underline">
-           View/Edit Profile
-         </Link>
-      </div>
-    </div>
-  );
-}
+       {/* Add links to profile settings, etc. */}
+       <div className="mt-8">
+          <Link href="/dashboard/profile" className="text-blue-600 hover:underline">
+            View/Edit Profile
+          </Link>
+       </div>
+     </div>
+   );
+ }

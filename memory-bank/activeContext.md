@@ -1,7 +1,7 @@
 # Active Context: NaijaLearn
 
 ## Current Work Focus
-The current focus is on completing "Phase 1: Core User Journey - Authentication & Course Discovery (MVP)" of the development action plan. Significant progress has been made on authentication and course discovery features.
+The current focus is on completing the remaining tasks from Phase 1 (Enhancements): implementing social logins. The avatar upload functionality has been implemented, the navigation bar has been updated, a TypeScript error related to course progress calculation has been fixed, and the protected route redirect and login page links have been updated.
 
 ## Recent Changes
 - Implemented basic user authentication (signup and login forms integrated with Redux).
@@ -15,13 +15,22 @@ The current focus is on completing "Phase 1: Core User Journey - Authentication 
 - Created the detailed course pages (`app/courses/[slug]/page.tsx`) to display individual course information and handle enrollment.
 - Implemented fetching and displaying user's enrolled courses on the dashboard (`app/(platform)/dashboard/page.tsx`).
 - Implemented the password recovery flow (`app/(auth)/forgot-password/page.tsx`, `app/(auth)/update-password/page.tsx`).
+- Implemented the Lesson View Page (`app/courses/[courseSlug]/lessons/[lessonSlug]/page.tsx`).
+- Implemented the Course Structure Sidebar component (`components/features/courses/CourseSidebar.tsx`).
+- Implemented Progress Tracking functionality (including marking lessons complete, calculating course progress, and displaying progress on the dashboard).
+- Implemented Quiz System functionality (including Supabase schema setup for `quiz_attempts`, `QuizPlayer` component, fetching quiz data, storing attempts, and integration with Lesson View Page).
+- Enhanced User Dashboard with "Resume Learning" links.
+- Implemented avatar upload functionality on the User Profile page.
+- Updated the navigation bar to include links for the Dashboard and Profile pages.
+- Fixed TypeScript error in `lib/courseProgress.ts` by adding the missing `courseLessonsQuery` to `lib/sanityQueries.ts`.
+- Updated protected route redirect to `/login`.
+- Added signup and forgotten password links to the login page (`app/(auth)/login/page.tsx`).
 
 ## Next Steps
-The immediate next steps are to complete the remaining tasks in "Phase 1: Core User Journey - Authentication & Course Discovery (MVP)". This includes:
+The immediate next steps are to complete the remaining task from Phase 1:
 - Implement social logins (optional enhancement).
-- Implement avatar upload functionality on the User Profile page (enhancement).
 
-After completing Phase 1, the project will move on to "Phase 2: Core E-Learning Mechanics - Consumption & Quizzes".
+After completing this remaining Phase 1 enhancement, the project can move on to "Phase 3: NaijaLearn Specific Interactive Features".
 
 ## Active Decisions and Considerations
 - Ensuring robust error handling and user feedback for all authentication and enrollment processes.

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAppSelector } from '@/store/hooks';
+import Image from 'next/image'; // Import Image component
+import AvatarUpload from '@/components/AvatarUpload'; // Import the new component
 
 export default function ProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -12,7 +14,9 @@ export default function ProfilePage() {
   const [message, setMessage] = useState<string | null>(null); // Add message state
   const [fullName, setFullName] = useState('');
   const [bio, setBio] = useState('');
+  // avatarUrl state is now managed by the AvatarUpload component, but we keep it here to pass as prop and update profile state
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -22,19 +26,44 @@ export default function ProfilePage() {
       }
 
       try {
+        console.log('Fetching profile for user ID:', user.id); // Log user ID
         const { data, error } = await supabase
           .from('profiles')
           .select('full_name, bio, avatar_url')
-          .eq('id', user.id)
-          .single();
+          .eq('id', user.id); // Remove .single() temporarily for inspection
+
+        console.log('Supabase query result:', data); // Log the raw data result
+
+        if (data && data.length === 1) {
+           const profileData = data[0];
+           setProfile(profileData);
+           setFullName(profileData?.full_name || '');
+           setBio(profileData?.bio || '');
+           setAvatarUrl(profileData?.avatar_url || null);
+        } else if (data && data.length > 1) {
+           console.error('Multiple profile rows found for user ID:', user.id);
+           setError('Multiple profile entries found.');
+        } else {
+           console.warn('No profile row found for user ID:', user.id);
+           console.log('Attempting to create profile for user ID:', user.id); // Log before creation attempt
+           // No profile found, create one
+           const { error: createError } = await supabase
+             .from('profiles')
+             .insert([
+               { id: user.id, full_name: '', bio: '', avatar_url: null } // Initialize with default values
+             ]);
+
+           if (createError) {
+             console.error('Error creating profile:', createError.message);
+             setError('Error creating profile.');
+           } else {
+             // Profile created, refetch it
+             fetchProfile(); // Recursively call to fetch the newly created profile
+           }
+        }
 
         if (error) {
           setError(error.message);
-        } else {
-          setProfile(data);
-          setFullName(data?.full_name || '');
-          setBio(data?.bio || '');
-          setAvatarUrl(data?.avatar_url || null);
         }
       } catch (err: any) {
         setError(err.message);
@@ -46,10 +75,12 @@ export default function ProfilePage() {
     fetchProfile();
   }, [user]);
 
+
   const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setMessage(null); // Clear previous messages
 
     if (!user) {
       setError('User not authenticated');
@@ -62,24 +93,36 @@ export default function ProfilePage() {
         id: user.id,
         full_name: fullName,
         bio: bio,
-        avatar_url: avatarUrl, // Handle avatar upload separately
+        // avatar_url is handled by the AvatarUpload component
         updated_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase.from('profiles').upsert(updates);
+      // Handle profile text updates
+      const { error: profileError } = await supabase.from('profiles').upsert(updates);
 
-      if (error) {
-        setError(error.message);
-      } else {
-        // Profile updated successfully, maybe refetch or update local state
-        setMessage('Profile updated successfully!'); // Need to add message state
+      if (profileError) {
+        setError(profileError.message);
+        setLoading(false);
+        return;
       }
+
+      // Profile updated successfully
+      setMessage('Profile updated successfully!');
+
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleAvatarUploaded = (newAvatarUrl: string) => {
+    // Update the avatarUrl state in this component when the AvatarUpload component
+    // successfully uploads a new avatar and updates the profile in the database.
+    setAvatarUrl(newAvatarUrl);
+    setMessage('Avatar updated successfully!');
+  };
+
 
   if (loading) {
     return <div>Loading profile...</div>;
@@ -124,12 +167,19 @@ export default function ProfilePage() {
             onChange={(e) => setBio(e.target.value)}
           />
         </div>
-        {/* Add avatar upload input here later */}
+        {/* Avatar Section */}
+        <div className="mb-4">
+           <AvatarUpload
+             userId={user.id}
+             currentAvatarUrl={avatarUrl}
+             onUploadSuccess={handleAvatarUploaded}
+           />
+        </div>
         <div className="flex items-center justify-between">
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
             type="submit"
-            disabled={loading}
+            disabled={loading} // Disable while loading
           >
             {loading ? 'Updating...' : 'Update Profile'}
           </button>

@@ -30,11 +30,25 @@ export default function SignupForm() {
     } else {
       // Supabase signUp with email confirmation doesn't automatically log in
       // The user will be logged in after clicking the confirmation link
-      setMessage('Check your email for the confirmation link!');
-      setEmail('');
-      setPassword('');
-      // Optionally redirect to a confirmation pending page
-      // router.push('/auth/confirm');
+
+      // Create a corresponding profile entry in the profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([
+          { id: data.user?.id, full_name: '', bio: '', avatar_url: null } // Initialize with default values
+        ]);
+
+      if (profileError) {
+        console.error('Error creating profile:', profileError.message);
+        // Handle this error - maybe display a message to the user or log it
+        setMessage('Signup successful, but failed to create profile. Please contact support.');
+      } else {
+        setMessage('Check your email for the confirmation link!');
+        setEmail('');
+        setPassword('');
+        // Optionally redirect to a confirmation pending page
+        // router.push('/auth/confirm');
+      }
     }
     dispatch(setAuthLoading(false));
   };

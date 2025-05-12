@@ -15,7 +15,7 @@ export default function PlatformLayout({
   useEffect(() => {
     // Redirect to login if not loading and no user is authenticated
     if (!isLoading && !user) {
-      router.push('/auth/login');
+      router.push('/login');
     }
   }, [user, isLoading, router]);
 

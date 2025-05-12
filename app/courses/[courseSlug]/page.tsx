@@ -37,18 +37,18 @@ interface Course {
 // Generate static paths for all courses based on their slugs
 export async function generateStaticParams() {
   const slugs: string[] = await client.fetch(courseSlugsQuery);
-  return slugs.map((slug) => ({ slug }));
+  return slugs.map((slug) => ({ courseSlug: slug }));
 }
 
 // Fetch course data on the server
-async function getCourse(slug: string): Promise<Course> {
-  const course: Course = await client.fetch(courseDetailQuery, { slug });
+async function getCourse(courseSlug: string): Promise<Course> {
+  const course: Course = await client.fetch(courseDetailQuery, { courseSlug });
   return course;
 }
 
 
-export default function CourseDetailPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default function CourseDetailPage({ params }: { params: { courseSlug: string } }) {
+  const { courseSlug } = params;
   const [course, setCourse] = useState<Course | null>(null); // Use state for course data
   const [loading, setLoading] = useState(true); // Add loading state
   const [enrollmentStatus, setEnrollmentStatus] = useState<'not_enrolled' | 'enrolled' | 'loading'>('loading'); // Track enrollment status
@@ -57,11 +57,10 @@ export default function CourseDetailPage({ params }: { params: { slug: string } 
   const [isErrorMessage, setIsErrorMessage] = useState(false); // Add state to track if message is an error
 
   const { user } = useAppSelector((state) => state.auth); // Get user from Redux
-
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const fetchedCourse = await getCourse(slug);
+      const fetchedCourse = await getCourse(courseSlug);
       setCourse(fetchedCourse);
       setLoading(false);
 
@@ -86,10 +85,8 @@ export default function CourseDetailPage({ params }: { params: { slug: string } 
       } else {
          setEnrollmentStatus('not_enrolled');
       }
-    };
-
-    fetchData();
-  }, [slug, user]); // Refetch if slug or user changes
+    };    fetchData();
+  }, [courseSlug, user]); // Refetch if courseSlug or user changes
 
   const handleEnroll = async () => {
     if (!user) {

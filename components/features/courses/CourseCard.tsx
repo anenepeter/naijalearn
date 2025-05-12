@@ -36,8 +36,7 @@ export default function CourseCard({ course }: CourseCardProps) {
         {category && <p className="text-sm text-gray-600">Category: {category.title}</p>}
         {difficulty && <p className="text-sm text-gray-600">Difficulty: {difficulty}</p>}
         {instructor && <p className="text-sm text-gray-600">Instructor: {instructor.name}</p>}
-        {excerpt && <p className="text-gray-700 mt-2">{excerpt}</p>}
-        <Link href={`/courses/${slug.current}`} className="mt-4 inline-block text-blue-600 hover:underline">
+        {excerpt && <p className="text-gray-700 mt-2">{excerpt}</p>}        <Link href={`/courses/${slug.current}`} className="mt-4 inline-block text-blue-600 hover:underline">
           Learn More
         </Link>
       </div>
