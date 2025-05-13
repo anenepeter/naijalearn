@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { sanityClient } from '@/lib/sanityClient';
+import { client } from '@/lib/sanityClient';
 import { quizDetailQuery } from '@/lib/sanityQueries';
-// Import Supabase client and server action here - Placeholder for now
-// import { storeQuizAttempt } from '@/app/actions/quiz'; // Need to create this server action
+// Import Supabase client and server action here
+import { storeQuizAttempt } from '@/app/actions/quiz';
+import { markLessonComplete } from '@/app/actions/progress'; // Import markLessonComplete
 
 interface QuizPlayerProps {
   quizId: string; // Sanity quiz _id
@@ -39,12 +40,14 @@ const QuizPlayer: React.FC<QuizPlayerProps> = ({ quizId, lessonId }) => {
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<Record<string, boolean | null>>({}); // null: not answered, true: correct, false: incorrect
+  const [lessonCompleted, setLessonCompleted] = useState(false); // State to track if lesson is completed
+  const passingScore = 80; // Define a passing score (e.g., 80%)
 
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
         // Fetch quiz data from Sanity
-        const data = await sanityClient.fetch<QuizData>(quizDetailQuery, { quizId });
+        const data = await client.fetch<QuizData>(quizDetailQuery, { quizId });
         if (data) {
             setQuizData(data);
         } else {
@@ -108,23 +111,25 @@ const QuizPlayer: React.FC<QuizPlayerProps> = ({ quizId, lessonId }) => {
     // Store quiz attempt in Supabase
     try {
       // Call server action to store quiz attempt
-      // await storeQuizAttempt({
-      //   quizId: quizData._id,
-      //   lessonId: lessonId,
-      //   score: calculatedScore,
-      //   answersPayload: attemptAnswers,
-      // });
-      console.log('Placeholder: storeQuizAttempt called with:', {
+      await storeQuizAttempt({
         quizId: quizData._id,
         lessonId: lessonId,
         score: calculatedScore,
         answersPayload: attemptAnswers,
       });
+      console.log('Quiz attempt stored successfully.');
 
-      // Optional: Trigger lesson completion if score is passing
-      // if (calculatedScore >= passingScore) { // Need passing score logic
-      //   await markLessonComplete(lessonId); // Need to import markLessonComplete
-      // }
+
+      // Trigger lesson completion if score is passing and lessonId is available
+      if (lessonId && calculatedScore >= passingScore) {
+        const result = await markLessonComplete(lessonId, 'COURSE_SLUG_PLACEHOLDER'); // TODO: Pass actual courseSlug as a prop to QuizPlayer
+        if (result.success) {
+          setLessonCompleted(true);
+          console.log('Lesson marked complete after passing quiz.');
+        } else {
+          console.error('Failed to mark lesson complete after quiz:', result.error);
+        }
+      }
 
     } catch (err) {
       console.error('Failed to store quiz attempt:', err);
@@ -191,6 +196,12 @@ const QuizPlayer: React.FC<QuizPlayerProps> = ({ quizId, lessonId }) => {
         <div className="mt-4 text-xl font-bold">
           Your Score: {score}%
         </div>
+      )}
+
+      {submitted && lessonCompleted && (
+         <div className="mt-4 text-green-600 font-semibold">
+           Lesson marked as complete!
+         </div>
       )}
     </div>
   );

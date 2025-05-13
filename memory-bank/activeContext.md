@@ -1,7 +1,7 @@
 # Active Context: NaijaLearn
 
 ## Current Work Focus
-The current focus is on completing the remaining tasks from Phase 1 (Enhancements): implementing social logins. The avatar upload functionality has been implemented, the navigation bar has been updated, a TypeScript error related to course progress calculation has been fixed, and the protected route redirect and login page links have been updated.
+The current focus is on completing the remaining tasks from Phase 1 (Enhancements): implementing social logins. The avatar upload functionality has been implemented by creating and integrating a dedicated component and configuring Next.js image settings. The navigation bar has been updated, a TypeScript error related to course progress calculation has been fixed, and the protected route redirect and login page links have been updated.
 
 ## Recent Changes
 - Implemented basic user authentication (signup and login forms integrated with Redux).
@@ -20,7 +20,7 @@ The current focus is on completing the remaining tasks from Phase 1 (Enhancement
 - Implemented Progress Tracking functionality (including marking lessons complete, calculating course progress, and displaying progress on the dashboard).
 - Implemented Quiz System functionality (including Supabase schema setup for `quiz_attempts`, `QuizPlayer` component, fetching quiz data, storing attempts, and integration with Lesson View Page).
 - Enhanced User Dashboard with "Resume Learning" links.
-- Implemented avatar upload functionality on the User Profile page.
+- Implemented avatar upload functionality on the User Profile page, including creating the `AvatarUpload.tsx` component and configuring `next.config.js` for image optimization.
 - Updated the navigation bar to include links for the Dashboard and Profile pages.
 - Fixed TypeScript error in `lib/courseProgress.ts` by adding the missing `courseLessonsQuery` to `lib/sanityQueries.ts`.
 - Updated protected route redirect to `/login`.

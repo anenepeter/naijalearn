@@ -13,7 +13,7 @@ import { useAppSelector } from '@/store/hooks'; // Import Redux hook
 interface Course {
   _id: string;
   title: string;
-  slug: { current: string };
+  courseSlug: { current: string };
   description?: string;
   mainImage?: any; // Replace 'any' with a proper Sanity image type later
   category?: { title: string };
@@ -179,7 +179,7 @@ export default function CourseDetailPage({ params }: { params: { courseSlug: str
                 <ul>
                   {module.lessons.map((lesson) => (
                     <li key={lesson._id} className="mb-2">
-                      <Link href={`/courses/${course.slug.current}/lessons/${lesson.slug.current}`} className="text-blue-600 hover:underline">
+                      <Link href={`/courses/${course.courseSlug.current}/lessons/${lesson.slug.current}`} className="text-blue-600 hover:underline">
                         {lesson.title}
                       </Link>
                       {lesson.quiz && <span className="ml-2 text-sm text-gray-500">(Quiz)</span>}

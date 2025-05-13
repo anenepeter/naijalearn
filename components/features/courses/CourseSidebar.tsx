@@ -6,7 +6,7 @@ import Link from 'next/link';
 interface Lesson {
   _id: string;
   title: string;
-  slug: string;
+  slug: { current: string };
 }
 
 interface Module {
@@ -56,7 +56,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                     <Link
                       href={`/courses/${courseSlug}/lessons/${lesson.slug}`}
                       className={`block ${
-                        activeLessonSlug === lesson.slug
+                        activeLessonSlug !== undefined && activeLessonSlug === lesson.slug.current
                           ? 'text-blue-600 font-bold'
                           : 'text-gray-700 hover:text-blue-600'
                       }`}

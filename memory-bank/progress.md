@@ -26,7 +26,7 @@ The project has completed "Phase 0: Foundation & Setup" and has made significant
 The remaining tasks include:
 - Completing the remaining tasks in "Phase 1: Core User Journey - Authentication & Course Discovery (MVP)":
     - Implement social logins (optional enhancement).
-    - Implement avatar upload functionality on the User Profile page (enhancement).
+    - Implement avatar upload functionality on the User Profile page (enhancement). (Completed: Created and integrated `AvatarUpload.tsx` component, configured `next.config.js` for image host)
     - Updated the navigation bar to include links for the Dashboard and Profile pages.
     - Fixed TypeScript error in `lib/courseProgress.ts` by adding the missing `courseLessonsQuery` to `lib/sanityQueries.ts`.
     - Updated protected route redirect to `/login`.

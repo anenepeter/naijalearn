@@ -5,9 +5,13 @@ import React, { useEffect, useState } from 'react';
 import { client } from '@/lib/sanityClient';
 import { lessonDetailQuery } from '@/lib/sanityQueries';
 import { PortableText } from '@portabletext/react';
-import ReactPlayer from 'react-player'; // Note: If you encounter TypeScript errors here, you might need to install @types/react-player
 import { markLessonComplete } from '@/app/actions/progress';
 import QuizPlayer from '@/components/features/quiz/QuizPlayer';
+import CourseSidebar from '@/components/features/courses/CourseSidebar';
+import LessonVideo from '@/components/features/lessons/LessonVideo';
+import LessonContent from '@/components/features/lessons/LessonContent';
+import LessonResources from '@/components/features/lessons/LessonResources';
+import LessonNavigation from '@/components/features/lessons/LessonNavigation';
 
 interface LessonPageProps {
   params: {
@@ -65,6 +69,18 @@ const LessonPage: React.FC<LessonPageProps> = ({ params }) => {
     fetchLesson();
   }, [courseSlug, lessonSlug]);
 
+  const handleMarkComplete = async () => {
+    try {
+      await markLessonComplete(currentLesson._id, courseSlug);
+      // Optionally, add user feedback here (e.g., a toast notification)
+      console.log('Lesson marked complete!');
+    } catch (error) {
+      console.error('Failed to mark lesson complete:', error);
+      // Optionally, display an error message to the user
+    }
+  };
+
+
   if (loading) {
     return <div>Loading lesson...</div>;
   }
@@ -114,63 +130,50 @@ const LessonPage: React.FC<LessonPageProps> = ({ params }) => {
 
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">{currentLesson.title}</h1>
-
-      {currentLesson.videoUrl && (
-        <div className="mb-6">
-          <ReactPlayer url={currentLesson.videoUrl} controls width="100%" />
+    <div className="flex flex-col md:flex-row container mx-auto p-4">
+      {/* Course Structure Sidebar */}
+      {courseStructure && (
+        <div className="md:w-1/4 md:mr-8 mb-8 md:mb-0">
+          <CourseSidebar
+            courseSlug={courseSlug}
+            courseStructure={courseStructure}
+            activeLessonSlug={lessonSlug}
+          />
         </div>
       )}
 
-      <div className="prose max-w-none mb-6">
-        <PortableText value={currentLesson.content} />
-      </div>
+      {/* Main Lesson Content */}
+      <div className="md:w-3/4">
+        <h1 className="text-3xl font-bold mb-4">{currentLesson.title}</h1>
 
-      {currentLesson.downloadableResources && currentLesson.downloadableResources.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold mb-2">Resources</h2>
-          <ul>
-            {currentLesson.downloadableResources.map((resource) => (
-              <li key={resource._key}>
-                <a href={resource.asset.url} download={resource.asset.originalFilename} className="text-blue-600 hover:underline">
-                  {resource.asset.originalFilename}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        <LessonVideo videoUrl={currentLesson.videoUrl} />
 
-      {currentLesson.quiz && (
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold mb-2">Quiz</h2>
-          {/* Render the QuizPlayer component */}
-          <QuizPlayer quizId={currentLesson.quiz._id} lessonId={currentLesson._id} />
-        </div>
-      )}
+        <LessonContent content={currentLesson.content} />
 
-      <button
-        onClick={() => markLessonComplete(currentLesson._id, courseSlug)}
-        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-      >
-        Mark Complete
-      </button>
+        <LessonResources resources={currentLesson.downloadableResources} />
 
-      <div className="flex justify-between mt-8">
-        {previousLesson && (
-          <a href={`/courses/${courseSlug}/lessons/${previousLesson.slug.current}`} className="text-blue-600 hover:underline">
-            ← Previous Lesson: {previousLesson.title}
-          </a>
+        {currentLesson.quiz && (
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold mb-2">Quiz</h2>
+            {/* Render the QuizPlayer component */}
+            <QuizPlayer quizId={currentLesson.quiz._id} lessonId={currentLesson._id} />
+          </div>
         )}
-        {nextLesson && (
-          <a href={`/courses/${courseSlug}/lessons/${nextLesson.slug.current}`} className="text-blue-600 hover:underline">
-            Next Lesson: {nextLesson.title} →
-          </a>
-        )}
-      </div>
 
-      {/* TODO: Integrate Course Structure Sidebar */}
+        <button
+          onClick={handleMarkComplete}
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+        >
+          Mark Complete
+        </button>
+
+        <LessonNavigation
+          courseSlug={courseSlug}
+          previousLesson={previousLesson}
+          nextLesson={nextLesson}
+        />
+
+      </div>
     </div>
   );
 };
