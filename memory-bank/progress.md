@@ -38,7 +38,11 @@ The remaining tasks include:
     - Implement Quiz System functionality (including Supabase schema setup for `quiz_attempts`, `QuizPlayer` component, fetching quiz data, storing attempts, and integration with Lesson View Page).
     - Enhance User Dashboard (specifically "Resume Learning" links).
     - Implement quiz consumption logic (displaying questions, handling answers, feedback, score calculation).
-- Implementing "Phase 3: NaijaLearn Specific Interactive Features".
+- Implementing "Phase 3: NaijaLearn Specific Interactive Features":
+    - Language Pronunciation Tool: Partially implemented (component and Sanity schema created, data fetching and full functionality needed).
+    - Interactive Map of Nigeria: Partially implemented (component and Sanity schema created, data fetching and full interactivity needed).
+    - Drag-and-Drop Cultural Matching Game: Partially implemented (component and Sanity schema created, data fetching and full game logic needed).
+    - Nigerian Cuisine Recipe Explorer: Partially implemented (component and Sanity schema created, dynamic data fetching and potential interactive elements needed).
 - Implementing "Phase 4: Content Management (Admin) & Advanced Features".
 - Implementing "Phase 5: Refinement, Testing, Optimization & Deployment".
 - Addressing cross-cutting concerns like robust error handling, state management refinement, TypeScript usage, code quality, secrets management, and asynchronous operations need continuous effort throughout all phases.
